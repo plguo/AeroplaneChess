@@ -5,7 +5,7 @@ class GamesSocketController < WebsocketRails::BaseController
   end
 
   def request_color
-    game_id = message[:channel][1..-1].to_i
+    game_id = message[:game_id]
     color = message[:color]
     if player = Player.find_by(game_id: game_id, color: color, state: :waiting)
       player.state = :typing_name
@@ -18,7 +18,7 @@ class GamesSocketController < WebsocketRails::BaseController
   end
 
   def set_name
-    game_id = message[:channel][1..-1].to_i
+    game_id = message[:game_id]
     @game = Game.find(game_id)
     id = message[:id].to_i
     if player = @game.players.find(id)
