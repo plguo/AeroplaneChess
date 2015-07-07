@@ -1,0 +1,28 @@
+<div class="container">
+  <div id="map">
+    <%= retina_image_tag('Map.png', id:'mapImage', alt:'Aeroplane Chess Background', draggable:'false') %>
+    <% colors = ['Blue','Yellow','Green','Red'] %>
+    <% colors.each_with_index do |color,index| %>
+      <% for j in 0..3 %>
+        <%= retina_image_tag("Chess#{color}.png", class: 'chess', id:"c#{index}#{j}", alt:"Chess #{color} #{j+1}", draggable:'false', data: {position: (index*4 + 76 + j) }) %>
+        <%= retina_image_tag("Star#{color}.png", class: 'star', id:"s#{index}#{j}", alt:"Finished Chess #{color} #{j+1}", draggable:'false', data: {position: (index*4 + 76 + j) }) %>
+      <% end %>
+    <% end %>
+  </div>
+  <div id="players">
+    <% colors.each do |color| %>
+    <div class="player <%= color.downcase %>" data-active="true" data-state="choosing">
+      <div class="name-box">
+        <div class="name-input">
+          <input type="text" placeholder="Name">
+        </div>
+        <div class="name-display">
+        </div>
+      </div>
+      <div class="dice-box">
+        <div class="dice" data-face="0" data-rotate="false"></div>
+      </div>
+    </div>
+    <% end %>
+  </div>
+</div>
