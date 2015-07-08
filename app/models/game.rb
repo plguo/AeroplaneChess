@@ -16,7 +16,7 @@ class Game < ActiveRecord::Base
 
   private
   def set_players
-    Player.states.keys.each_with_index do |color, index|
+    Player.colors.keys.each_with_index do |color, index|
       player = Player.new
       player.color = color
       player.game = self

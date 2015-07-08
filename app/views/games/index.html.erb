@@ -10,8 +10,8 @@
     <% end %>
   </div>
   <div id="players">
-    <% colors.each do |color| %>
-    <div class="player <%= color.downcase %>" data-active="true" data-state="choosing">
+    <% colors.each_with_index do |color,index| %>
+    <div class="player <%= color.downcase %>" id="p<%= index%>" data-active="true" data-state="choosing">
       <div class="name-box">
         <div class="name-input">
           <input type="text" placeholder="Name">
@@ -26,3 +26,4 @@
     <% end %>
   </div>
 </div>
+<div class="meta" id="root_url"><%= "#{request.host}:#{request.port}" %></div>

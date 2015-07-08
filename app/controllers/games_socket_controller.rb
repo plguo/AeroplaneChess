@@ -1,16 +1,18 @@
 class GamesSocketController < WebsocketRails::BaseController
   def new_game
-    @game = Game.find_by(state: :waiting) || Game.create
+    @game = Game.find_by(state: 0) || Game.create
     trigger_success info.merge(:game_id => @game.id)
   end
 
   def request_color
     game_id = message[:game_id]
     color = message[:color]
-    if player = Player.find_by(game_id: game_id, color: color, state: :waiting)
+    send_message 'log', 'test'
+    if player = Player.find_by(game_id: game_id, color: color, state: 0)
       player.state = :typing_name
       player.save
-      trigger_success player.id
+      msg = {:id => player.id, :color => color}
+      trigger_success msg
       broadcast_info
     else
       trigger_failure 'taken'
