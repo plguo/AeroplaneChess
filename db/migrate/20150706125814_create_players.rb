@@ -4,7 +4,7 @@ class CreatePlayers < ActiveRecord::Migration
       t.string :name
       t.integer :color, null: false
       t.integer :state, default: 0, null: false
-      t.string :raw_chesses
+      t.string :chesses
 
       t.boolean :robot, default: false, null: false
 

@@ -3,6 +3,7 @@ WebsocketRails::EventMap.describe do
     subscribe :new, :to => GamesSocketController, :with_method => :new_game
     subscribe :request_color, :to => GamesSocketController, :with_method => :request_color
     subscribe :set_name, :to => GamesSocketController, :with_method => :set_name
+    subscribe :roll, :to => GamesSocketController, :with_method => :roll
   end
   # You can use this file to map incoming events to controller actions.
   # One event can be mapped to any number of controller actions. The

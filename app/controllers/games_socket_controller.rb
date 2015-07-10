@@ -1,14 +1,17 @@
 class GamesSocketController < WebsocketRails::BaseController
   def new_game
-    @game = Game.find_by(state: 0) || Game.create
+    #@game = Game.find_by(state: 0)
+    @game = Game.last
+    @game = Game.create if @game.nil?
     trigger_success info.merge(:game_id => @game.id)
   end
 
   def request_color
-    game_id = message[:game_id]
+    game_id = message[:game_id].to_i
+    @game = Game.find(game_id)
     color = message[:color]
-    send_message 'log', 'test'
-    if player = Player.find_by(game_id: game_id, color: color, state: 0)
+    player = Player.find_by(game_id: game_id, color: color, state: 0)
+    unless player.nil?
       player.state = :typing_name
       player.save
       msg = {:id => player.id, :color => color}
@@ -20,10 +23,11 @@ class GamesSocketController < WebsocketRails::BaseController
   end
 
   def set_name
-    game_id = message[:game_id]
+    game_id = message[:game_id].to_i
     @game = Game.find(game_id)
     id = message[:id].to_i
-    if player = @game.players.find(id)
+    player = @game.players.find(id)
+    unless player.nil?
       name = message[:name].strip
       name = "Unnamed Player" if name.blank?
       player.name = ActionController::Base.helpers.sanitize(name)
@@ -37,13 +41,27 @@ class GamesSocketController < WebsocketRails::BaseController
     broadcast_info
   end
 
+  def roll
+    game_id = message[:game_id].to_i
+    @game = Game.find(game_id)
+    @game.next_move! #roll -> rolling
+    broadcast_info
+
+    sleep 1.0
+    @game.next_move! #rolling -> move
+    broadcast_info
+  end
+
+  def move
+  end
+
   private
   def info
     players = []
     @game.players.order(:color).each do |player|
       players << {:name => player.name, :state => player.state, :chesses => player.raw_chesses}
     end
-    {:state => @game.state, :players => players}
+    {:state => @game.state, :turn => @game[:turn], :steps => @game.steps, :players => players}
   end
 
   def broadcast_info

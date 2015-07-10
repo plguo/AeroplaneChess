@@ -7,14 +7,23 @@ log = (obj) ->
   console.log(obj)
 
 class Game
-  @player = {id: 0, color: 0}
+  constructor: ->
+    @player = {id: -1, color: -1}
+    @move_lock = false
 
   set_channel: (channel_name) ->
     $t = @
     @channel = @dispatcher.subscribe(channel_name)
     @channel.bind 'update', (message) ->
       $t.state = message.state
+      $t.turn = message.turn
+      $t.steps = message.steps
+      $t.path = message.path
       $t.players = message.players
+
+      $t.update()
+      return
+    return
 
   connect: (url) ->
     $t = @
@@ -25,10 +34,13 @@ class Game
 
     @dispatcher.trigger 'game.new', {}
     , (message) ->
-      log message
       $t.game_id = message.game_id
       $t.state = message.state
+      $t.turn = message.turn
+      $t.steps = message.steps
+      $t.path = message.path
       $t.players = message.players
+      $t.update()
       $t.set_channel('G'+$t.game_id)
       return
     , (message) ->
@@ -37,28 +49,65 @@ class Game
     return
 
   update: ->
-    for player, i of @players
-      if player.state == "waiting"
-        $('#p'+i).attr('data-state','choosing')
+    console.log(@)
+    self = @
+    player_data = ['','','','']
+
+    for color, player of @players
+      if player.state == "waiting" && self.player.color == -1
+        player_data[color] = 'choosing'
       else if player.state == "typing_name"
-        $('#p'+i).first().attr('data-state','typing')
-      else if player.state == "ready"
-        $('#p'+i).first().attr('data-state','ready')
+        player_data[color] = 'typing' if color != self.player.color
+      else if player.state == "ready" && @state == "waiting"
+        player_data[color] = 'ready'
+      else
+        player_data[color] = 'none'
+
+      $('#p'+color+' .name-display').first().text(player.name) if player.name != null
+
+    if @state == 'roll'
+      if @turn == @player.color
+        player_data[@turn] = 'roll'
+      else
+        player_data[@turn] = 'waiting'
+    else if @state == 'rolling'
+      player_data[@turn] = 'rolling'
+    else if @state == 'move' || @state == 'moving'
+      player_data[@turn] = 'move'
+      $('#p'+@turn+' .dice').first().attr('data-face', @steps)
+
+    for color, state of player_data
+      $('#p'+color).attr('data-state',state) unless state == ''
+
+    return
 
   request_color: (color) ->
     $t = @
-    log 'Rqs'
     @dispatcher.trigger 'game.request_color', {game_id: @game_id, color: color}
     , (message) ->
-      log message
-      log color
       $t.player = message
-      $('#p'+color).attr('data-state','input')
-      $('#p'+color+' input').first().focus()
+      player_selector = '#p' + color
+      $(player_selector).attr('data-state','input')
+      $(player_selector+' input').first().focus()
+      $('.player:not('+player_selector+')[data-state="choosing"]').attr('data-state','none')
       return
     , (message) ->
       return
     return
+
+  set_name: (name) ->
+    @dispatcher.trigger 'game.set_name', { id: @player.id, name: name, game_id: @game_id }
+
+  roll: () ->
+    @dispatcher.trigger 'game.roll', { id: @player.id, game_id: @game_id }
+
+  move: (chess) ->
+    if !@move_lock && (!in_airport(chess) || @steps == 6)
+      @move_lock = true
+      @dispatcher.trigger 'game.move', { id: @player.id, game_id: @game_id, move: chess }
+
+  in_airport: (chess) ->
+    return (chess >= 76 && chess < 92)
 
 getTransitionEndEvent = () ->
   if @transition == undefined
@@ -84,17 +133,31 @@ $.fn.extend
         left: positions[pos][0] - 14.5
         top: positions[pos][1] - 14.5
 
-  followPath: (path) ->
-    return if path.length == undefined || path.length == 0
+  followPath: (path, shouldAnimated, callback) ->
+    if path.length == undefined || path.length == 0
+      if typeof callback == "function"
+        callback()
+      return
     @each () ->
+      if typeof shouldAnimated == "function"
+        flag = shouldAnimated()
+      else
+        flag == true
+
       $t = $(this)
-      $t.data('position', path.shift())
-      $t.correctPosition();
-      $t.on getTransitionEndEvent(), (event) ->
-        if event.originalEvent.propertyName == 'top'
-          $t.followPath path
-          $(this).off event
-        false
+      if flag
+        $t.data('position', path.shift())
+        $t.correctPosition()
+        $t.on getTransitionEndEvent(), (event) ->
+          if event.originalEvent.propertyName == 'top'
+            $t.followPath path, shouldAnimated, callback
+            $(this).off event
+          false
+      else
+        $t.data('position', path[-1])
+        $t.correctPosition()
+        callback() if typeof callback == "function"
+      return
 
 game = new Game
 $ ->
@@ -102,16 +165,28 @@ $ ->
   $('.chess, .star').correctPosition()
   $('.player input').click false
   $('.player').click ->
-    $t = $(this);
-    if $t.attr('data-state') == 'roll'
-      $dice = $t.find('.dice-box .dice').first()
-      if $dice.attr('data-rotate') == 'true'
-        $dice.attr('data-rotate','false')
-        $t.attr('data-state','roll')
-      else
-        $dice.attr('data-rotate','true')
-        $t.attr('data-state','none')
-      true
-    else if $t.attr('data-state') == 'choosing'
+    $t = $(this)
+    state = $t.attr('data-state')
+    if state == 'roll'
+      $t.attr('data-state','rolling')
+      game.roll()
+    else if state == 'choosing'
       game.request_color($t.attr('id').slice(1))
-  true
+    else if state == 'input'
+      name = $t.find('input').first().val()
+      $nd = $t.find('.name-display').first()
+      $nd.text(name)
+      $nd.attr('data-self','true')
+      $t.attr('data-state','ready')
+      game.set_name name
+    return
+
+  $('.chess').click ->
+    $t = $(this)
+
+
+  $('.player input').keypress (e) ->
+    if e.which == 13
+      $p = $(@).parents('.player').first().click()
+
+  return

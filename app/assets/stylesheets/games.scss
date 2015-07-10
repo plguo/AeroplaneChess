@@ -13,6 +13,33 @@
   }
 }
 
+@-webkit-keyframes rotating{
+  from {
+    -webkit-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+  to {
+    -webkit-transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
+}
+@keyframes rotating {
+  from {
+    -ms-transform: rotate(0deg);
+    -moz-transform: rotate(0deg);
+    -webkit-transform: rotate(0deg);
+    -o-transform: rotate(0deg);
+    transform: rotate(0deg);
+  }
+  to {
+    -ms-transform: rotate(360deg);
+    -moz-transform: rotate(360deg);
+    -webkit-transform: rotate(360deg);
+    -o-transform: rotate(360deg);
+    transform: rotate(360deg);
+  }
+}
+
 body{
   background-color: #ecf0f1;
 }
@@ -25,6 +52,7 @@ body{
 
   position: relative;
   float: left;
+
 }
 
 #players{
@@ -72,196 +100,19 @@ body{
 
 .chess{
   display: block;
-  transition-property: top, left;
-  transition-duration: 1s;
-  transition-timing-function: ease-in-out;
+}
+
+#map[animated-move=true] .chess{
+  -webkit-transition-property: top, left;
+          transition-property: top, left;
+  -webkit-transition-duration: 1s;
+          transition-duration: 1s;
+  -webkit-transition-timing-function: ease-in-out;
+          transition-timing-function: ease-in-out;
 }
 
 .star{
   display: none;
-}
-
-.player{
-  width: 100%;
-  height: 120px;
-  position: relative;
-
-  &.blue{
-    background-color: #2980b9;
-    &[data-active="true"]{
-      background-color: #3498db;
-      box-shadow: 0 0 10px #3498db;
-    }
-    .name-input input[type="text"]{
-      color: #3498db;
-    }
-  }
-
-  &.yellow{
-    background-color: #f39c12;
-    &[data-active="true"]{
-      background-color: #f1c40f;
-      box-shadow: 0 0 10px #f1c40f;
-    }
-    .name-input input[type="text"]{
-      color: #f1c40f;
-    }
-  }
-
-  &.green{
-    background-color: #27ae60;
-    &[data-active="true"]{
-      background-color: #2ecc71;
-      box-shadow: 0 0 10px #2ecc71;
-    }
-    .name-input input[type="text"]{
-      color: #2ecc71;
-    }
-  }
-
-  &.red{
-    background-color: #c0392b;
-    &[data-active="true"]{
-      background-color: #e74c3c;
-      box-shadow: 0 0 10px #e74c3c;
-    }
-    .name-input input[type="text"]{
-      color: #e74c3c;
-    }
-  }
-
-  &:not(:first-child){
-    margin-top: 37px;
-  }
-
-  &:after{
-    display: none;
-    text-transform: uppercase;
-    font-weight: bold;
-    text-align: center;
-    width: 100%;
-    font-size: 24px;
-    height: 30px;
-    line-height: 30px;
-    color: white;
-    position: absolute;
-    background: rgba(0, 0, 0, 0.5);
-  }
-
-  &[data-state="choosing"]:after{
-    display: block;
-    content: "Choose me";
-    bottom: 45px;
-  }
-
-  &[data-state="typing"]:after{
-    display: block;
-    content: "Typing name";
-    bottom: 45px;
-  }
-
-  &[data-state="roll"]:after{
-    display: block;
-    content: "Click to roll";
-    bottom: 20px;
-  }
-
-  &[data-state="ready"]:after{
-    display: block;
-    content: "Ready";
-    bottom: 20px;
-  }
-
-  &[data-state="input"]:after{
-    display: block;
-    content: "Done";
-    bottom: 20px;
-  }
-
-  &[data-state="input"], &[data-state="choosing"], &[data-state="typing"], &[data-state="ready"]{
-    .dice{
-      display: none;
-    }
-  }
-
-  &[data-state="roll"], &[data-state="wait"]{
-    .dice{
-      @include image-with-2x("Dice0.png","Dice0@2x.png");
-    }
-  }
-}
-
-@-webkit-keyframes rotating{
-  from {
-    -webkit-transform: rotate(0deg);
-    transform: rotate(0deg);
-  }
-  to {
-    -webkit-transform: rotate(360deg);
-    transform: rotate(360deg);
-  }
-}
-@keyframes rotating {
-  from {
-    -ms-transform: rotate(0deg);
-    -moz-transform: rotate(0deg);
-    -webkit-transform: rotate(0deg);
-    -o-transform: rotate(0deg);
-    transform: rotate(0deg);
-  }
-  to {
-    -ms-transform: rotate(360deg);
-    -moz-transform: rotate(360deg);
-    -webkit-transform: rotate(360deg);
-    -o-transform: rotate(360deg);
-    transform: rotate(360deg);
-  }
-}
-
-.name-box{
-  height: 50px;
-  padding: 0 10px;
-
-  .name-input input[type="text"]{
-    display: none;
-
-    outline: 0;
-
-    background-color: white;
-    padding: 5px 15px;
-    border-radius: 30px;
-    border: none;
-
-    font-weight: 100;
-    font-size: 17px;
-
-    position: relative;
-    top: 10px;
-
-    box-sizing: border-box;
-    width: 100%;
-
-    font-family: "Trebuchet MS", Helvetica, sans-serif;
-  }
-
-  .name-display{
-    display: block;
-    color: white;
-    font-family: "Trebuchet MS", Helvetica, sans-serif;
-    position: relative;
-    top: 10px;
-    font-size: 24px;
-  }
-
-}
-
-.player[data-state="input"] .name-box{
-  input[type="text"]{
-    display: block;
-  }
-  .name-display{
-    display: none;
-  }
 }
 
 .dice-box{
@@ -304,14 +155,177 @@ body{
   &[data-face="6"]{
     @include image-with-2x("Dice6.png","Dice6@2x.png");
   }
+}
 
-  &[data-rotate="true"]{
-    @include image-with-2x("Dice6.png","Dice6@2x.png");
-    -webkit-animation: rotating .5s linear infinite;
-    -moz-animation: rotating .5s linear infinite;
-    -ms-animation: rotating .5s linear infinite;
-    -o-animation: rotating .5s linear infinite;
-    animation: rotating .5s linear infinite;
+.player{
+  width: 100%;
+  height: 120px;
+  position: relative;
+
+  &.blue{
+    background-color: #2980b9;
+    &[data-state="choosing"], &[data-state="input"], &[data-state="waiting"], &[data-state="roll"], &[data-state="rolling"], &[data-state="move"]{
+      background-color: #3498db;
+      box-shadow: 0 0 10px #3498db;
+    }
+    .name-input input[type="text"]{
+      color: #3498db;
+    }
+  }
+
+  &.yellow{
+    background-color: #f39c12;
+    &[data-state="choosing"], &[data-state="input"], &[data-state="waiting"], &[data-state="roll"], &[data-state="rolling"], &[data-state="move"]{
+      background-color: #f1c40f;
+      box-shadow: 0 0 10px #f1c40f;
+    }
+    .name-input input[type="text"]{
+      color: #f1c40f;
+    }
+  }
+
+  &.green{
+    background-color: #27ae60;
+    &[data-state="choosing"], &[data-state="input"], &[data-state="waiting"], &[data-state="roll"], &[data-state="rolling"], &[data-state="move"]{
+      background-color: #2ecc71;
+      box-shadow: 0 0 10px #2ecc71;
+    }
+    .name-input input[type="text"]{
+      color: #2ecc71;
+    }
+  }
+
+  &.red{
+    background-color: #c0392b;
+    &[data-state="choosing"], &[data-state="input"], &[data-state="waiting"], &[data-state="roll"], &[data-state="rolling"], &[data-state="move"]{
+      background-color: #e74c3c;
+      box-shadow: 0 0 10px #e74c3c;
+    }
+    .name-input input[type="text"]{
+      color: #e74c3c;
+    }
+  }
+
+  &:not(:first-child){
+    margin-top: 37px;
+  }
+
+  &::after{
+    display: none;
+    text-transform: uppercase;
+    font-weight: bold;
+    text-align: center;
+    width: 100%;
+    font-size: 24px;
+    height: 30px;
+    line-height: 30px;
+    color: white;
+    position: absolute;
+    background: rgba(0, 0, 0, 0.5);
+  }
+
+  &[data-state="choosing"]::after{
+    display: block;
+    content: "Choose me";
+    bottom: 45px;
+  }
+
+  &[data-state="typing"]::after{
+    display: block;
+    content: "Typing name";
+    bottom: 45px;
+  }
+
+  &[data-state="roll"]::after{
+    display: block;
+    content: "Click to roll";
+    bottom: 20px;
+  }
+
+  &[data-state="ready"]::after{
+    display: block;
+    content: "Ready";
+    bottom: 20px;
+  }
+
+  &[data-state="input"]::after{
+    display: block;
+    content: "Done";
+    bottom: 20px;
+  }
+
+  &[data-state="input"], &[data-state="choosing"], &[data-state="typing"], &[data-state="ready"]{
+    .dice{
+      display: none;
+    }
+  }
+
+  &[data-state="roll"], &[data-state="waiting"]{
+    .dice{
+      @include image-with-2x("Dice0.png","Dice0@2x.png");
+    }
+  }
+
+  &[data-state="rolling"]{
+    .dice{
+      @include image-with-2x("Dice6.png","Dice6@2x.png");
+      -webkit-animation: rotating .5s linear infinite;
+      -moz-animation: rotating .5s linear infinite;
+      -ms-animation: rotating .5s linear infinite;
+      -o-animation: rotating .5s linear infinite;
+      animation: rotating .5s linear infinite;
+    }
+  }
+}
+
+.name-box{
+  height: 50px;
+  padding: 0 10px;
+
+  .name-input input[type="text"]{
+    display: none;
+
+    outline: 0;
+
+    background-color: white;
+    padding: 5px 15px;
+    border-radius: 30px;
+    border: none;
+
+    font-weight: 100;
+    font-size: 17px;
+
+    position: relative;
+    top: 10px;
+
+    box-sizing: border-box;
+    width: 100%;
+
+    font-family: "Trebuchet MS", Helvetica, sans-serif;
+  }
+
+  .name-display{
+    display: block;
+    color: white;
+    font-family: "Trebuchet MS", Helvetica, sans-serif;
+    position: relative;
+    top: 10px;
+    font-size: 24px;
+  }
+
+  .name-display[data-self=true]::before{
+    opacity: 0.7;
+    content: "You: ";
+  }
+
+}
+
+.player[data-state="input"] .name-box{
+  input[type="text"]{
+    display: block;
+  }
+  .name-display{
+    display: none;
   }
 }
 
