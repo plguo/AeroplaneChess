@@ -7,11 +7,20 @@ class Player < ActiveRecord::Base
 
   after_initialize :load_chesses
 
-  def move(chess, steps)
-    old_pos = self.raw_chesses[chess][0]
-    case old_pos
-    when old_pos
+  def move_chess!(chess_id, steps)
+    if chess_id.between?(0,3)
+      chess = self.chesses[chess_id]
+      if chess.valid_move?(steps)
+        path = chess.move_by!(steps)
+        save
+        return path
+      end
+    end
+  end
 
+  def generate_chesses
+    self.chesses = 4.times.map do |index|
+      Chess.new(@color ,index ,76 + 4 * @color + index, false)
     end
   end
 end

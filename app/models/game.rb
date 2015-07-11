@@ -4,8 +4,6 @@ class Game < ActiveRecord::Base
   enum turn: [:blue, :yellow, :green, :red]
   after_create :set_players
 
-  attr_reader :path
-
   def ready?
     players.where(state: 2).count == 4
   end
@@ -16,7 +14,11 @@ class Game < ActiveRecord::Base
     save
   end
 
-  def next_move!(options={})
+  def next_state!(options={})
+    state_sym = self.state.to_sym
+    #Avoid unwanted multiple next_state! calls
+    return if state_sym != options[:from]
+
     case self.state.to_sym
     when :roll
       self.state = :rolling
@@ -25,10 +27,13 @@ class Game < ActiveRecord::Base
       self.steps = rand(6) + 1
     when :move
       self.state = :moving
-      self.path = pass
     end
     save
     self.state.to_sym
+  end
+
+  def move_chess!(chess)
+    players[self[:turn]].move_chess(chess,self.steps)
   end
 
   private
@@ -37,7 +42,7 @@ class Game < ActiveRecord::Base
       player = Player.new
       player.color = color
       player.game = self
-      player.raw_chesses = (0..3).to_a.map {|e| [76+index*4+e,false]}
+      player.generate_chesses
       player.save
     end
   end

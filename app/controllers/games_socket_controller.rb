@@ -44,22 +44,31 @@ class GamesSocketController < WebsocketRails::BaseController
   def roll
     game_id = message[:game_id].to_i
     @game = Game.find(game_id)
-    @game.next_move! #roll -> rolling
+    @game.next_state! from: :roll #roll -> rolling
     broadcast_info
 
     sleep 1.0
-    @game.next_move! #rolling -> move
+
+    @game.next_state! from: :rolling #rolling -> move
     broadcast_info
   end
 
   def move
+    path = @game.move_chess!(message[:move].to_i)
+    unless path.nil?
+      @game.next_state! from: :move
+      WebsocketRails["G#{@game.id}"].trigger(:move, path)
+    end
   end
 
   private
   def info
-    players = []
-    @game.players.order(:color).each do |player|
-      players << {:name => player.name, :state => player.state, :chesses => player.raw_chesses}
+    players = @game.players.order(:color).each.map do |player|
+      {
+        :name => player.name,
+        :state => player.state,
+        :chesses => player.chesses.map{|c| c.to_a}
+      }
     end
     {:state => @game.state, :turn => @game[:turn], :steps => @game.steps, :players => players}
   end

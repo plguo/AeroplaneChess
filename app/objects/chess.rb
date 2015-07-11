@@ -56,12 +56,20 @@ class Chess
     @position < 52 || ((@color * 6 + 52)..(@color * 6 + 57)).include?(@position) || ((@color * 4 + 76)..(@color * 4 + 79)).include?(@position) || (@color + 92) == @position
   end
 
+  def valid_move?(steps)
+    !@finished && ( steps == 6 || !in_airport? )
+  end
+
   def in_airport?
     _in_airport? @position
   end
 
   def on_runway?
     _on_runway? @position
+  end
+
+  def to_a
+    [@position, @finished]
   end
 
   private
