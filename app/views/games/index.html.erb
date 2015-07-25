@@ -4,7 +4,7 @@
     <% colors = ['Blue','Yellow','Green','Red'] %>
     <% colors.each_with_index do |color,index| %>
       <% for j in 0..3 %>
-        <%= retina_image_tag("Chess#{color}.png", class: [color.downcase, 'chess'], id:"c#{index}#{j}", alt:"Chess #{color} #{j+1}", draggable:'false', data: {position: (index*4 + 76 + j) }) %>
+        <%= retina_image_tag("Chess#{color}.png", class: [color.downcase, 'chess'], id:"c#{index}#{j}", alt:"Chess #{color} #{j+1}", draggable:'false', data: {position: (index*4 + 76 + j), finished: 'false', moving: 'false', movable: 'false' }) %>
         <%= retina_image_tag("Star#{color}.png", class: [color.downcase, 'star'], id:"s#{index}#{j}", alt:"Finished Chess #{color} #{j+1}", draggable:'false', data: {position: (index*4 + 76 + j) }) %>
       <% end %>
     <% end %>

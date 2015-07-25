@@ -17,6 +17,7 @@ ActiveRecord::Schema.define(version: 20150706125814) do
     t.integer  "state",      default: 0, null: false
     t.integer  "turn",       default: 0
     t.integer  "steps",      default: 0, null: false
+    t.integer  "stage",      default: 0, null: false
     t.datetime "created_at",             null: false
     t.datetime "updated_at",             null: false
   end

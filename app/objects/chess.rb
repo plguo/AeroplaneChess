@@ -7,16 +7,20 @@ class ChessesGroup
         "Attribute was supposed to be an Array object contains 4 Chess objects"
     end
 =end
+
+    return if object.nil?
     data = object[0].color.to_s
     object.each do |element|
-      data += element.position < 10 ? '0' + element.position.to_s : element.position.to_s
+      data += element.position < 10 ? "0#{element.position}" : element.position.to_s
       data += element.finished ? 'T' : 'F'
     end
+    data
   end
 
   def self.load(raw)
+    return if raw.blank?
     color = raw[0].to_i
-    (0..3).map do |index|
+    4.times.map do |index|
       info = raw[(index*3+1),3]
       Chess.new(color, index, info[0..1].to_i, info[2]=='T')
     end
@@ -31,7 +35,7 @@ class Chess
     @id = id.to_i
     @position = position.to_i
     @finished = finished == true
-    unless (0..3).include?(@color) && (0..3).include?(@id) && vaild_position?
+    unless (0..3).include?(@color) && (0..3).include?(@id) && valid_position?
       raise ArgumentError
     end
   end
@@ -39,20 +43,42 @@ class Chess
   def move_by!(steps)
     if in_airport?
       @position = @color + 92
-      { path: [@position], finished: (@finished = false), flyby: nil }
+      { chess: self.to_id, path: [@position], finished: (@finished = false), flyby: nil }
     elsif on_runway?
       path_info = path(runway_exit,steps-1)
       path = path_info[0...(-1)].unshift(runway_exit)
       @position = path[-1]
-      { path: path, finished: (@finished = false), flyby: nil }
+      { chess: self.to_id, path: path, finished: (@finished = false), flyby: nil }
     else
       path_info = path(@position,steps)
       @position = path_info[-2]
-      { path: path_info[0...(-1)], finished: (@finished = (@position == (57 + @color * 6))), flyby: path_info[-1] }
+      back_to_airport! if @finished = (@position == (57 + @color * 6))
+      { chess: self.to_id, path: path_info[0...(-1)], finished: @finished, flyby: path_info[-1] }
     end
   end
 
-  def vaild_position?
+  def back_to_airport!
+    @position = 76 + @color * 4 + @id
+  end
+
+  def position_after(steps)
+    unless in_airport?
+      @@position_after_cache ||= Hash.new
+      cache_key = position * 6 + steps - 1
+      if @@position_after_cache[cache_key].nil?
+        if on_runway?
+           @@position_after_cache[cache_key] =  path(runway_exit, steps)[-2]
+        else
+          @@position_after_cache[cache_key] =  path(@position, steps)[-2]
+        end
+      end
+      @@position_after_cache[cache_key]
+    else
+      nil
+    end
+  end
+
+  def valid_position?
     @position < 52 || ((@color * 6 + 52)..(@color * 6 + 57)).include?(@position) || ((@color * 4 + 76)..(@color * 4 + 79)).include?(@position) || (@color + 92) == @position
   end
 
@@ -68,16 +94,34 @@ class Chess
     _on_runway? @position
   end
 
-  def to_a
+  def to_info
     [@position, @finished]
   end
 
-  private
+  def to_id
+    "#{@color}#{@id}"
+  end
 
+  def self.on_runway_for_color(color)
+    self.new(color, 0, (color + 92), false)
+  end
+
+  private
   def path(start, steps)
-    puts "path(start: #{start.inspect}, steps: #{steps.inspect})"
     if steps <= 0
-      if long_jump? start
+      if super_jump? start
+        case @color
+        when 0
+          [17, 66 , 29, 66]
+        when 1
+          [30, 72, 42, 72]
+        when 2
+          [43, 54, 3, 54]
+        when 3
+          [4, 60, 16, 60]
+        else
+        end
+      elsif long_jump? start
         case @color
         when 0
           [66 , 29, 66]
@@ -122,8 +166,12 @@ class Chess
     pos == [17, 30, 43, 4][@color]
   end
 
+  def super_jump?(pos)
+    pos == [13, 26, 39, 0][@color]
+  end
+
   def entrance?(pos)
-    pos == [49, 36, 64, 58][@color]
+    pos == [49, 10, 23, 36][@color]
   end
 
   def _in_airport?(pos)
