@@ -26,6 +26,7 @@ class GamePrediction
         end
       end
     end
+    prediction
   end
 
 end
